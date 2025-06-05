@@ -1,0 +1,18 @@
+# Groq API Key
+INSTANT_API_KEY: gsk_k2cW1ItKuIJj6Zq23fDscHQ3LdDy0iUPsDWomkTW0V9BCqpIi5xa0NROIBEnWvoV
+INSTANT_MODEL: meta-llama/llama-4-scout-17b-16e-instruct
+INSTANT_BASE_URL: https://api.groq.com/openai/v1
+# OpenRouter API Key
+REASONING_API_KEY: sk-or-v1-sx6Try5nU8TiOI8LvCOHtvdCLpsjlAcGkhp9rnnfE180GLvlNzE94nVVoqwr1TwV
+REASONING_MODEL: openai/o4-mini
+REASONING_BASE_URL: https://openrouter.ai/api/v1
+# Recording Directory
+RECORDING_DIRECTORY: ./recordings/
+# Hugging Face Token
+HUGGINGFACE_TOKEN: put_hf_token_here
+
+# Miscellaneous Keys
+GROQ_API_KEY: gsk_k2cW1ItKuIJj6Zq23fDscHQ3LdDy0iUPsDWomkTW0V9BCqpIi5xa0NROIBEnWvoV
+CEREBRAS_API_KEY: csk-wqIldnuyy22amsbEeKocVz1h6YmTJUcEipTWPDCxR8JfclwjERZrFSEcbpD1i7jD
+OPENROUTER_API_KEY: sk-or-v1-sx6Try5nU8TiOI8LvCOHtvdCLpsjlAcGkhp9rnnfE180GLvlNzE94nVVoqwr1TwV
+OPENAI_API_KEY: sk-proj-nXLB1UQCw9MSuxWCBuARq8s4IMgryFHk3aHU6ZhQgGnSJbXDJtsiuEkL7xSMUldT37ySnhF7l9pdgrp0uCWkTYy6sJKr6XvxUOpSkvEZeBbHSST9imLHaRxP2totjZTFkOQLHGimzMc3hAOdMx7gdfR5IHkd

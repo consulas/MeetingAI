@@ -1,0 +1,14 @@
+# Ignore Python cache files
+__pycache__/
+*.py[cod]
+
+# Ignore virtual environment
+venv/
+
+# Ignore recordings directory
+recordings/
+
+# Ignore specific files
+config.yaml
+meetingAI.db
+# /models/meetingAI.db

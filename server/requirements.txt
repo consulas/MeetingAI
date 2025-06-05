@@ -1,0 +1,14 @@
+SQLAlchemy==1.4.22
+fastapi==0.68.1
+uvicorn==0.15.0
+pyaudio==0.2.11
+numpy==1.21.2
+torch==1.9.0
+whisper==1.0.0
+pyannote.audio==2.1.1
+openai==0.25.0
+instructor==0.1.0
+mss==6.1.0
+pillow==9.0.1
+pydantic==1.8.2
+pyyaml==6.0
