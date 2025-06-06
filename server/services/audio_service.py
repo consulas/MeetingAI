@@ -8,6 +8,7 @@ import os
 import threading
 import queue
 import yaml
+import requests
 
 # Load the configuration from config.yaml
 with open('config.yaml', 'r') as file:
@@ -132,22 +133,26 @@ class AudioService:
                     
                     buffer.extend(data)
 
-                # Turn buffer into a WAV file for easy processing
-                audio_data = bytes(buffer)
-                wav_buf = io.BytesIO()
-                wf = wave.open(wav_buf, 'wb')
+
+                buffer_io = io.BytesIO()
+                wf = wave.open(buffer_io, 'wb')
                 wf.setnchannels(1)
                 wf.setsampwidth(pyaudio.get_sample_size(FORMAT))
                 wf.setframerate(self.sample_rate)
-                wf.writeframes(audio_data)
+                wf.writeframes(buffer)
                 wf.close()
 
-                # Read for model
-                wav_buf.seek(0)
-                raw_audio = wave.open(wav_buf).readframes(len(audio_data)//2)
-                audio_np = np.frombuffer(raw_audio, dtype=np.int16).astype(np.float32) / 32768.0
-                result = self.whisper_model.transcribe(audio_np, language='en')
-                self.current_phrase = result['text'].strip()
+                # Reset buffer position to start
+                buffer_io.seek(0)
+
+                # Prepare request
+                form_data = {
+                    'file': ('file', buffer_io),
+                    'response_format': 'text'
+                }
+
+                response = requests.post('http://localhost:8081/inference', files=form_data)
+                self.current_phrase = response.text.strip()
 
             await asyncio.sleep(.1)
     
