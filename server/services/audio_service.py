@@ -9,6 +9,7 @@ import threading
 import queue
 import yaml
 import requests
+import aiohttp
 
 # Load the configuration from config.yaml
 with open('config.yaml', 'r') as file:
@@ -26,7 +27,7 @@ class AudioService:
     def __init__(self, audio_device_info,
                  whisper_model, meeting_id,
                  sample_rate=16000, chunk_size=1024,
-                 transcribe_rate=config.get('TRANSCRIBE_RATE', .5),
+                 transcribe_rate=config.get('TRANSCRIBE_RATE', 1),
                  silence_seconds=config.get('SILENCE_SECONDS', 1),
                  threshold=config.get('THRESHOLD', 0),
                  max_record_time=config.get('MAX_RECORD_TIME', 30),
@@ -156,7 +157,11 @@ class AudioService:
             await asyncio.sleep(.1)
 
     async def _transcribe_audio(self, buffer_io):
-        response = requests.post('http://localhost:8081/inference', files={'file': ('file', buffer_io), 'response_format': 'text'})
+        # Using aiohttp or another async HTTP client would be more suitable here
+        # For simplicity, we'll use a thread pool executor to run the blocking requests.post call
+        import asyncio
+        loop = asyncio.get_running_loop()
+        response = await loop.run_in_executor(None, lambda: requests.post('http://localhost:8081/inference', files={'file': ('file', buffer_io), 'response_format': 'text'}))
         self.current_phrase = response.text.strip()
 
     def stop(self):
