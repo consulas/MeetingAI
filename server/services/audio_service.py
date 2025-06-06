@@ -151,11 +151,13 @@ class AudioService:
                     'response_format': 'text'
                 }
 
-                response = requests.post('http://localhost:8081/inference', files=form_data)
-                self.current_phrase = response.text.strip()
+                asyncio.create_task(self._transcribe_audio(buffer_io))
 
             await asyncio.sleep(.1)
-    
+
+    async def _transcribe_audio(self, buffer_io):
+        response = requests.post('http://localhost:8081/inference', files={'file': ('file', buffer_io), 'response_format': 'text'})
+        self.current_phrase = response.text.strip()
 
     def stop(self):
         self.running = False

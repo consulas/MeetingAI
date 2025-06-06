@@ -60,21 +60,14 @@ In Hugging Face, accept all user conditions for pyannote mentioned in the TL;DR 
 The API keys are fake, but I think it's funny to leave it in for scrapers to find and fail.
 
 # TODO & New Features
-Fix the orm_mode, from_attributes error
-
-Figure out the timing (start time for active meetings, start time + length for normal meetings)
-current length for live meetings?
-
-Get it production ready
-
-There must be a more efficient way to send the transcript via websocket - instead of sending the entire transcript, only send the last chunk being updated and put a chunk_id to denote order.
-
 Use a whisper server instead of whisper library directly. It adds startup overhead, but can more easily process parallel requests. Furthermore only load diarization when needed. And/or look for a less VRAM intensive alternative.
-
-Add RAG for all question types: previously asked questions, relevant projects, past stories, labuladong's FUCKING ALGORITHM notes, system design docs, etc.
 
 Use python multiprocessing > multithreading & asyncio so new requests aren't blocked by the GIL.
 Or is there a way to add more cores for the backend without blocking?
+
+Add RAG for all question types: previously asked questions, relevant projects, past stories, labuladong's FUCKING ALGORITHM notes, system design docs, etc.
+
+There must be a more efficient way to send the transcript via websocket - instead of sending the entire transcript, only send the last chunk being updated and put a chunk_id to denote order.
 
 Add web-search capabilities to trivia (searxng, beautifulsoup)
 
