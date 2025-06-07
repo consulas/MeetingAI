@@ -9,6 +9,11 @@ import threading
 import queue
 import yaml
 
+import soundfile as sf
+import nemo.collections.asr as nemo_asr
+
+
+
 # Load the configuration from config.yaml
 with open('config.yaml', 'r') as file:
     config = yaml.safe_load(file)
@@ -47,6 +52,10 @@ class AudioService:
         self.meeting_id = meeting_id
         self.data_queue = queue.Queue()
         self.record_thread = None
+
+        self.asr_model = nemo_asr.models.ASRModel.from_pretrained(model_name="nvidia/parakeet-tdt-0.6b-v2")
+
+
 
     def _find_device_index(self, name):
         pa = pyaudio.PyAudio()
@@ -132,22 +141,22 @@ class AudioService:
                     
                     buffer.extend(data)
 
-                # Turn buffer into a WAV file for easy processing
-                audio_data = bytes(buffer)
-                wav_buf = io.BytesIO()
-                wf = wave.open(wav_buf, 'wb')
+                wav_io = io.BytesIO()
+                wf = wave.open(wav_io, 'wb')
                 wf.setnchannels(1)
                 wf.setsampwidth(pyaudio.get_sample_size(FORMAT))
                 wf.setframerate(self.sample_rate)
-                wf.writeframes(audio_data)
+                wf.writeframes(buffer)
                 wf.close()
 
-                # Read for model
-                wav_buf.seek(0)
-                raw_audio = wave.open(wav_buf).readframes(len(audio_data)//2)
-                audio_np = np.frombuffer(raw_audio, dtype=np.int16).astype(np.float32) / 32768.0
-                result = self.whisper_model.transcribe(audio_np, language='en')
-                self.current_phrase = result['text'].strip()
+                # Reset the file pointer to the beginning of the BytesIO object
+                wav_io.seek(0)
+
+                if len(buffer) > 0:
+                    # Read the audio data from the BytesIO object and convert it into a numpy array
+                    audio_signal, sample_rate = sf.read(wav_io)
+                    transcription = self.asr_model.transcribe(audio_signal)
+                    self.current_phrase = transcription[0].text
 
             await asyncio.sleep(.1)
     
