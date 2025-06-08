@@ -60,16 +60,7 @@ In Hugging Face, accept all user conditions for pyannote mentioned in the TL;DR 
 The API keys are fake, but I think it's funny to leave it in for scrapers to find and fail.
 
 # TODO & New Features
-Fix the orm_mode, from_attributes error
-
-Figure out the timing (start time for active meetings, start time + length for normal meetings)
-current length for live meetings?
-
-Get it production ready
-
 There must be a more efficient way to send the transcript via websocket - instead of sending the entire transcript, only send the last chunk being updated and put a chunk_id to denote order.
-
-Use a whisper server instead of whisper library directly. It adds startup overhead, but can more easily process parallel requests. Furthermore only load diarization when needed. And/or look for a less VRAM intensive alternative.
 
 Add RAG for all question types: previously asked questions, relevant projects, past stories, labuladong's FUCKING ALGORITHM notes, system design docs, etc.
 
@@ -88,6 +79,11 @@ POST /meetings/1/tags - uses a tag name in the data to add a tag to a meeting. I
 Split settings into a separate router
 
 Throw the backend schemas into the same file. Probably do the same on the frontend lib/api. This is a shitty web app, not a production grade application.
+
+## Other features
+Use a whisper server instead of whisper library directly. It adds startup overhead, but can more easily process parallel requests. Furthermore only load diarization when needed. And/or look for a less VRAM intensive alternative.
+- nemo branch uses nvidia parakeet, which is arguably better than whisper - but it's also fast and performant AF. This branch also loads diarization when needed
+- whisper_server is adapted to use a whisper_server running on localhost:8081 - However it feels slower than using python whisper. Later changes with async and non-blocking post requests has improved the performance, but eh keep it simple, stupid. Probably just stick with the whisper library.
 
 ## Will you support new changes?
 ![Image](dontCare.png)
