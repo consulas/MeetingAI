@@ -10,9 +10,7 @@ from routers.audio_router import get_audio_devices_by_audio_id
 from services.audio_service import AudioService
 from services.post_processing import diarize, summarize
 from pydantic import BaseModel
-import torch
-import whisper
-from pyannote.audio import Pipeline
+import nemo.collections.asr as nemo_asr
 
 import yaml
 # Load the configuration from config.yaml
@@ -24,17 +22,8 @@ router = APIRouter()
 # meeting_id -> AudioService
 services = {}  
 
-if torch.backends.cuda.is_built():
-    device = "cuda"
-else:
-    device = "cpu"
-
-# whisper_model = whisper.load_model("base.en", device=device)
-whisper_model = whisper.load_model("turbo", device=device)
-HUGGINGFACE_TOKEN = config.get("HUGGINGFACE_TOKEN", "") 
-
-diarization_pipeline = Pipeline.from_pretrained("pyannote/speaker-diarization-3.1", use_auth_token=HUGGINGFACE_TOKEN)
-diarization_pipeline.to(torch.device(device))
+# nemo almost requires a GPU to run successfully
+asr_model = nemo_asr.models.ASRModel.from_pretrained(model_name="nvidia/parakeet-tdt-0.6b-v2")
 
 def get_db():
     db = SessionLocal()
@@ -104,7 +93,7 @@ async def start_meeting(meeting: MeetingStart, db: Session = Depends(get_db)):
 
     # Start the audio service for this meeting
     audio_device_info = get_audio_devices_by_audio_id(meeting.audio_id, db)
-    service = AudioService(audio_device_info, whisper_model, new_meeting.meeting_id)
+    service = AudioService(audio_device_info, asr_model, new_meeting.meeting_id)
     services[new_meeting.meeting_id] = service
     asyncio.create_task(service.start())
 
@@ -150,12 +139,11 @@ async def stop_meeting(meeting_id: int, db: Session = Depends(get_db)):
     db.commit()  # Commit status before async services
 
     # Kick off the diarization_service and summarization_service
-    diarization_task = asyncio.create_task(diarize(audio_file, whisper_model, diarization_pipeline))
+    diarization_task = asyncio.create_task(diarize(audio_file)) # Load the pipeline and asr model per the code
     summarization_task = asyncio.create_task(summarize(transcript))
 
     # Wait for both services to complete
     diarized_transcript, finished_summary = await asyncio.gather(diarization_task, summarization_task)
-    # finished_summary = await asyncio.gather(summarization_task)
 
     meeting.transcript = json.dumps(diarized_transcript)
     meeting.summary = finished_summary

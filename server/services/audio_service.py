@@ -28,7 +28,7 @@ def rms_energy(samples: np.ndarray) -> float:
 
 class AudioService:
     def __init__(self, audio_device_info,
-                 whisper_model, meeting_id,
+                 asr_model, meeting_id,
                  sample_rate=16000, chunk_size=1024,
                  transcribe_rate=config.get('TRANSCRIBE_RATE', .5),
                  silence_seconds=config.get('SILENCE_SECONDS', 1),
@@ -38,7 +38,7 @@ class AudioService:
 
         # audio_device_info: list of objects with name, channel, n_channels
         self.audio_device_info = audio_device_info
-        self.whisper_model = whisper_model
+        self.asr_model = asr_model
         self.sample_rate = sample_rate
         self.chunk_size = chunk_size
         self.transcribe_rate = timedelta(seconds=transcribe_rate)
@@ -52,10 +52,6 @@ class AudioService:
         self.meeting_id = meeting_id
         self.data_queue = queue.Queue()
         self.record_thread = None
-
-        self.asr_model = nemo_asr.models.ASRModel.from_pretrained(model_name="nvidia/parakeet-tdt-0.6b-v2")
-
-
 
     def _find_device_index(self, name):
         pa = pyaudio.PyAudio()
@@ -159,7 +155,6 @@ class AudioService:
                     self.current_phrase = transcription[0].text
 
             await asyncio.sleep(.1)
-    
 
     def stop(self):
         self.running = False

@@ -3,6 +3,11 @@ import yaml
 from library.prompts import SummarizePrompt
 from openai import OpenAI
 
+import torch
+from pyannote.audio import Pipeline
+import soundfile as sf
+import nemo.collections.asr as nemo_asr
+
 # Load the configuration from config.yaml
 with open('config.yaml', 'r') as file:
     config = yaml.safe_load(file)
@@ -11,31 +16,35 @@ with open('config.yaml', 'r') as file:
 INSTANT_API_KEY = config['INSTANT_API_KEY']
 INSTANT_BASE_URL = config['INSTANT_BASE_URL']
 INSTANT_MODEL = config['INSTANT_MODEL']
+HUGGINGFACE_TOKEN = config['HUGGINGFACE_TOKEN']
 
 # Mock async functions for diarization and summarization
-async def diarize(audio_file, whisper_model, diarization_pipeline):
-    # --- Step 1: Run Diarization ---
-    diarization = diarization_pipeline(audio_file)
+async def diarize(audio_file):
+    # Transcribe the audio
+    asr_model = nemo_asr.models.ASRModel.from_pretrained(model_name="nvidia/parakeet-tdt-0.6b-v2")
+    audio_signal, sample_rate = sf.read(audio_file)
+    transcript = asr_model.transcribe(audio_signal, timestamps=True)
+    # May change to 'character'/'word'/'segment'
+    text_type = 'word'
+    transcript = transcript[0].timestamp[text_type]
 
-    # --- Step 2: Run Whisper Transcription ---
-    # transcription = whisper_model.transcribe(audio_path, verbose=False, word_timestamps=True)
-    transcription = whisper_model.transcribe(
-        audio_file,
-        verbose=False,
-        logprob_threshold=-.4,
-        no_speech_threshold=.4,
-        word_timestamps=True,  # Enable word-level timestamps
-        hallucination_silence_threshold=1.0  # Skip silent periods longer than 2.0 seconds
-    )
+    # Perform diarization
+    pipeline = Pipeline.from_pretrained("pyannote/speaker-diarization-3.1", use_auth_token=HUGGINGFACE_TOKEN)
+    pipeline.to(torch.device("cuda"))
+    diarization = pipeline(audio_file)
+
+    del asr_model
+    del pipeline
+    torch.cuda.empty_cache()
 
     result = []
     current_speaker = None
     current_text = []
 
-    for segment in transcription['segments']:
+    for segment in transcript:
         start = segment['start']
         end = segment['end']
-        text = segment['text'].strip()
+        text = segment[text_type].strip()
 
         # Find the speaker label that overlaps the most with this segment
         speaker = "Unknown"
