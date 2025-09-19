@@ -1,9 +1,10 @@
 SQLAlchemy
 fastapi
 uvicorn
+websockets
 pyaudio
 torch --index-url https://download.pytorch.org/whl/cu128
-whisper
+openai-whisper
 pyannote.audio
 openai
 instructor

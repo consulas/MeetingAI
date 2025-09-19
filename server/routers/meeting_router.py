@@ -150,15 +150,15 @@ async def stop_meeting(meeting_id: int, db: Session = Depends(get_db)):
     db.commit()  # Commit status before async services
 
     # Kick off the diarization_service and summarization_service
-    diarization_task = asyncio.create_task(diarize(audio_file, whisper_model, diarization_pipeline))
-    summarization_task = asyncio.create_task(summarize(transcript))
+    # diarization_task = asyncio.create_task(diarize(audio_file, whisper_model, diarization_pipeline))
+    # summarization_task = asyncio.create_task(summarize(transcript))
 
     # Wait for both services to complete
-    diarized_transcript, finished_summary = await asyncio.gather(diarization_task, summarization_task)
+    # diarized_transcript, finished_summary = await asyncio.gather(diarization_task, summarization_task)
     # finished_summary = await asyncio.gather(summarization_task)
 
-    meeting.transcript = json.dumps(diarized_transcript)
-    meeting.summary = finished_summary
+    # meeting.transcript = json.dumps(diarized_transcript)
+    # meeting.summary = finished_summary
 
     db.commit()  # Commit status after async services
 
